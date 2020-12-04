@@ -23,6 +23,10 @@ TODO
 
 TODO
 
+## Special Thanks
+
+1. [Suchit Kar](https://github.com/diddypod) for helping me debug and test the bot.
+
 ## Help
 
 Please raise an Issue [here](https://github.com/python-telegram-xp/issues/new) if you have any problems.
