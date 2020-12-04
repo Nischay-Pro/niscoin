@@ -19,6 +19,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 # dqueue1 = DelayQueue(burst_limit=20, time_limit_ms=60000)
 
+LEVELS = [0, 100, 235, 505, 810, 1250, 1725, 2335, 2980, 3760, 4575, 5525, 6510, 7630, 8785, 10075, 11400, 12860, 14355, 15985, 17650, 19450, 21285, 23255, 25260, 27400, 29575, 31885, 34230, 36710, 39225, 41875, 44560, 47380, 50235, 53225, 56250, 59410, 62605, 65935]
+
 class MQBot(telegram.bot.Bot):
     '''A subclass of Bot which delegates send method handling to MQ'''
     def __init__(self, *args, is_queued_def=True, mqueue=None, **kwargs):
@@ -99,13 +101,19 @@ def echo(update, context):
         context.chat_data.update(chat_data)
         context.bot.send_message(chat_id=chat_id, text="Chat Settings successfully purged!")
 
-    elif messageString == "!topxp" and context.chat_data:
+    elif (messageString == "!topxp" or messageString == "!toplvl") and context.chat_data:
         chat_text = "The current XP table: \n"
         users = context.chat_data['users']
         sorted(users.items(),key=lambda x: x[1]['xp'], reverse=True)
         for idx, user in enumerate(users):
-            chat_text += "{}\t{} {}\t{}\n".format(idx + 1, users[user]["user_first"], users[user]["user_last"], users[user]["xp"])
-            
+            user_xp = users[user]["xp"]
+            for idx2, lvl in enumerate(LEVELS):
+                if user_xp < lvl:
+                    chat_text += "{}\t{} {}\t({}/{})\n".format(idx + 1, users[user]["user_first"], users[user]["user_last"], users[user]["xp"], lvl)
+                    break
+                elif user_xp == lvl:
+                    chat_text += "{}\t{} {}\t({}/{})\n".format(idx + 1, users[user]["user_first"], users[user]["user_last"], users[user]["xp"], LEVELS[idx2 + 1])
+                    break
         context.bot.send_message(chat_id=chat_id, text=chat_text)
 
     elif messageString == "!debug" and context.chat_data:
@@ -139,16 +147,26 @@ def echo(update, context):
                         chat_data = context.chat_data
                         delta_award_time = chat_data["users"][user_id]["delta_award_time"]
                         if epoch_time - last_message_time >= delta_award_time:
+                            old_xp = chat_data["users"][user_id]["xp"]
+                            old_level = findLevel(old_xp)
                             chat_data["users"][user_id]["xp"] += randrange(1, 12)
+                            new_xp = chat_data["users"][user_id]["xp"]
+                            new_level = findLevel(new_xp)
                             chat_data["users"][user_id]["last_message"] = epoch_time
                             delta_award_time = randrange(1 * 60, 4 * 60)
                             chat_data["users"][user_id]["delta_award_time"] = delta_award_time
                             context.chat_data.update(chat_data)
+                            if old_level != new_level and old_level[0] != 0:
+                                context.bot.send_message(chat_id=chat_id, text="🌟 {} has reached level {}!".format(update.message.from_user.first_name, old_level[0]))
 
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
+def findLevel(xp):
+    for idx, itm in enumerate(LEVELS):
+        if xp <= itm:
+            return (idx, itm)
 
 def main():
     """Start the bot."""
