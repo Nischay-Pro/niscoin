@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 # dqueue1 = DelayQueue(burst_limit=20, time_limit_ms=60000)
 
 LEVELS = []
+STATIC_CONFIGURATION = []
 
 class MQBot(telegram.bot.Bot):
     '''A subclass of Bot which delegates send method handling to MQ'''
@@ -70,11 +71,12 @@ def help(update, context):
 
 def echo(update, context):
     """Echo the user message."""
-    messageString = update.message.text
-    if messageString != None:
-        messageString = messageString.lower()
-    else:
+    try:
+        messageString = update.message.text
+    except AttributeError:
         return
+
+    messageString = messageString.lower()
 
     chat_id = update.message.chat.id
 
@@ -244,7 +246,14 @@ def echo(update, context):
                         if epoch_time - last_message_time >= delta_award_time:
                             old_xp = chat_data["users"][user_id]["xp"]
                             old_level = findLevel(old_xp)
-                            chat_data["users"][user_id]["xp"] += randrange(1, 12)
+                            multiplier = 1
+                            if STATIC_CONFIGURATION[0]["lottery"]["enabled"]:
+                                if 1 == randrange(1, STATIC_CONFIGURATION[0]["lottery"]["odds"] + 1):
+                                    multiplier = STATIC_CONFIGURATION[0]["lottery"]["multiplier"]
+                            gained_xp = round(randrange(1, 12) * multiplier)
+                            if multiplier != 1:
+                                context.bot.send_message(chat_id=chat_id, text="7️⃣7️⃣7️⃣ Lucky message! {} has received {} XP!".format(update.message.from_user.first_name, gained_xp))
+                            chat_data["users"][user_id]["xp"] += gained_xp
                             new_xp = chat_data["users"][user_id]["xp"]
                             new_level = findLevel(new_xp)
                             chat_data["users"][user_id]["last_message"] = epoch_time
@@ -290,6 +299,7 @@ def main():
     q = mq.MessageQueue(all_burst_limit=3, all_time_limit_ms=3000)
     request = Request(con_pool_size=8)
     if not config["bot_token"] == "<your token here>":
+        STATIC_CONFIGURATION.append(config)
         for i in range(501):
             LEVELS.append(genLevel(i))
         data_persistence = PicklePersistence(filename="db")

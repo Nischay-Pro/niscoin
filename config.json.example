@@ -1,3 +1,8 @@
 {
     "bot_token": "<your token here>"
+    "lottery":{
+        "enabled": false,
+        "odds": 100,
+        "multiplier": 10
+    }
 }
