@@ -5,6 +5,7 @@ from telegram.ext import CommandHandler, MessageHandler, Filters, DelayQueue, Up
 from telegram.error import (TelegramError, Unauthorized, BadRequest, 
                             TimedOut, ChatMigrated, NetworkError, RetryAfter)
 import telegram.bot
+from telegram.ext import messagequeue as mq
 from telegram.utils.request import Request
 
 import time
@@ -17,6 +18,26 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 # dqueue1 = DelayQueue(burst_limit=20, time_limit_ms=60000)
+
+class MQBot(telegram.bot.Bot):
+    '''A subclass of Bot which delegates send method handling to MQ'''
+    def __init__(self, *args, is_queued_def=True, mqueue=None, **kwargs):
+        super(MQBot, self).__init__(*args, **kwargs)
+        # below 2 attributes should be provided for decorator usage
+        self._is_messages_queued_default = is_queued_def
+        self._msg_queue = mqueue or mq.MessageQueue()
+
+    def __del__(self):
+        try:
+            self._msg_queue.stop()
+        except:
+            pass
+
+    @mq.queuedmessage
+    def send_message(self, *args, **kwargs):
+        '''Wrapped method would accept new `queued` and `isgroup`
+        OPTIONAL arguments'''
+        return super(MQBot, self).send_message(*args, **kwargs)
 
 def error_callback(update, context):
     try:
@@ -79,13 +100,19 @@ def echo(update, context):
         context.bot.send_message(chat_id=chat_id, text="Chat Settings successfully purged!")
 
     elif messageString == "!topxp" and context.chat_data:
-        chat_text = "The current XP table \n"
+        chat_text = "The current XP table: \n"
         users = context.chat_data['users']
-        sorted(users.items(),key=lambda x: x[1]['xp'],reverse=True)
+        sorted(users.items(),key=lambda x: x[1]['xp'], reverse=True)
         for idx, user in enumerate(users):
             chat_text += "{}\t{} {}\t{}\n".format(idx + 1, users[user]["user_first"], users[user]["user_last"], users[user]["xp"])
             
         context.bot.send_message(chat_id=chat_id, text=chat_text)
+
+    elif messageString == "!debug" and context.chat_data:
+        context.bot.send_message(chat_id=chat_id, text=json.dumps(context.chat_data["users"]))
+
+    elif messageString == "!about":
+        context.bot.send_message(chat_id=chat_id, text="Hello. I'm an XP and Reputation Bot developed by Nischay-Pro. Inspired from Combot.")
 
     else:
         if context.chat_data and "init" in context.chat_data:
@@ -126,9 +153,12 @@ def error(update, context):
 def main():
     """Start the bot."""
     config = json.loads(open("config.json").read())
+    q = mq.MessageQueue(all_burst_limit=3, all_time_limit_ms=3000)
+    request = Request(con_pool_size=8)
     if not config["bot_token"] == "<your token here>":
         data_persistence = PicklePersistence(filename="db")
-        updater = Updater(config["bot_token"], persistence=data_persistence, use_context=True)
+        bot = MQBot(config["bot_token"], request=request, mqueue=q)
+        updater = Updater(bot=bot, persistence=data_persistence, use_context=True)
     else:
         print("Missing Bot Token")
         exit()
