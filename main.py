@@ -137,9 +137,11 @@ def echo(update, context):
                 requester_details = context.bot.get_chat_member(chat_id, requester_user_id)
                 if requester_details.status == "creator":
                     changing_user_id = update.message.reply_to_message.from_user.id
-                    chat_data = context.chat_data
-                    chat_data["users"][changing_user_id]["xp"] = xp_set
-                    context.bot.send_message(chat_id=chat_id, text="XP changed successfully.")
+                    changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+                    if not changing_user_data["user"]["is_bot"]:
+                        chat_data = context.chat_data
+                        chat_data["users"][changing_user_id]["xp"] = xp_set
+                        context.bot.send_message(chat_id=chat_id, text="XP changed successfully.")
                 else:
                     context.bot.send_message(chat_id=chat_id, text="Unauthorized user.")
     
@@ -147,25 +149,29 @@ def echo(update, context):
         if update.message.reply_to_message != None:
             requester_user_id = update.message.from_user.id
             changing_user_id = update.message.reply_to_message.from_user.id
-            requester = context.chat_data['users'][requester_user_id]
-            changer = context.chat_data['users'][changing_user_id]
-            chat_data = context.chat_data
-            chat_data['users'][changing_user_id]['rep'] += 1
-            context.chat_data.update(chat_data)
-            bot_message = "<b>{} {}</b> ({}) has increased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'] + 1)
-            context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
+                requester = context.chat_data['users'][requester_user_id]
+                changer = context.chat_data['users'][changing_user_id]
+                chat_data = context.chat_data
+                chat_data['users'][changing_user_id]['rep'] += 1
+                context.chat_data.update(chat_data)
+                bot_message = "<b>{} {}</b> ({}) has increased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
+                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
 
     elif messageString == "-":
         if update.message.reply_to_message != None:
             requester_user_id = update.message.from_user.id
             changing_user_id = update.message.reply_to_message.from_user.id
-            requester = context.chat_data['users'][requester_user_id]
-            changer = context.chat_data['users'][changing_user_id]
-            chat_data = context.chat_data
-            chat_data['users'][changing_user_id]['rep'] -= 1
-            context.chat_data.update(chat_data)
-            bot_message = "<b>{} {}</b> ({}) has decreased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'] - 1)
-            context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
+                requester = context.chat_data['users'][requester_user_id]
+                changer = context.chat_data['users'][changing_user_id]
+                chat_data = context.chat_data
+                chat_data['users'][changing_user_id]['rep'] -= 1
+                context.chat_data.update(chat_data)
+                bot_message = "<b>{} {}</b> ({}) has decreased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
+                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
         
     elif messageString == "!debug" and context.chat_data:
         context.bot.send_message(chat_id=chat_id, text=json.dumps(context.chat_data["users"]))
