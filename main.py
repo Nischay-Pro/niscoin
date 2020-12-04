@@ -104,7 +104,11 @@ def echo(update, context):
     elif (messageString == "!topxp" or messageString == "!toplvl") and context.chat_data:
         chat_text = "The current XP table: \n"
         users = context.chat_data['users']
-        users = sorted(users.items(),key=lambda x: x[1]['xp'], reverse=True)
+        usersSort = sorted(users.items(),key=lambda x: x[1]['xp'], reverse=True)
+        users = {}
+        for itm in usersSort:
+            users[itm[0]] = itm[1]
+        print(users)
         for idx, user in enumerate(users):
             user_xp = users[user]["xp"]
             for idx2, lvl in enumerate(LEVELS):
