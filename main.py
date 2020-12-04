@@ -78,9 +78,9 @@ def echo(update, context):
 
     if messageString == "!start":
         if context.chat_data:
-            context.bot.send_message(chat_id=chat_id, text="We are already tracking your chat! Use !reset to reset this chat settings.")
+            context.bot.send_message(chat_id=chat_id, text="You already ran the command. If you want to reset the settings run !reset")
         else:
-            context.bot.send_message(chat_id=chat_id, text="Hello! You can start typing now and we'll be tracking your chats.")
+            context.bot.send_message(chat_id=chat_id, text="We're ready! Type away.")
             user_id = update.message.from_user.id
             user_first = update.message.from_user.first_name
             user_last = update.message.from_user.last_name
@@ -99,7 +99,7 @@ def echo(update, context):
         users = {user_id: {"user_id": user_id, "user_first": user_first, "user_last": user_last, "xp": 0, "rep": 0, "last_message": 0, "delta_award_time": 0}}
         chat_data = {"init" : True, "users": users}
         context.chat_data.update(chat_data)
-        context.bot.send_message(chat_id=chat_id, text="Chat Settings successfully purged!")
+        context.bot.send_message(chat_id=chat_id, text="Data expunged!")
 
     elif (messageString == "!topxp" or messageString == "!toplvl") and context.chat_data:
         chat_text = "The current XP table: \n"
@@ -108,23 +108,22 @@ def echo(update, context):
         users = {}
         for itm in usersSort:
             users[itm[0]] = itm[1]
-        print(users)
         for idx, user in enumerate(users):
             user_xp = users[user]["xp"]
             for idx2, lvl in enumerate(LEVELS):
                 if user_xp < lvl:
-                    chat_text += "{}\t{} {}\t({}/{})\n".format(idx + 1, users[user]["user_first"], users[user]["user_last"], users[user]["xp"], lvl)
+                    chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}/{})\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["xp"], lvl)
                     break
                 elif user_xp == lvl:
-                    chat_text += "{}\t{} {}\t({}/{})\n".format(idx + 1, users[user]["user_first"], users[user]["user_last"], users[user]["xp"], LEVELS[idx2 + 1])
+                    chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}/{})\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["xp"], LEVELS[idx2 + 1])
                     break
-        context.bot.send_message(chat_id=chat_id, text=chat_text)
+        context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
 
     elif messageString == "!debug" and context.chat_data:
         context.bot.send_message(chat_id=chat_id, text=json.dumps(context.chat_data["users"]))
 
     elif messageString == "!about":
-        context.bot.send_message(chat_id=chat_id, text="Hello. I'm an XP and Reputation Bot developed by Nischay-Pro. Inspired from Combot.")
+        context.bot.send_message(chat_id=chat_id, text="Hello. I'm an XP and Reputation Bot developed by Nischay-Pro. Inspired by Combot.")
 
     else:
         if context.chat_data and "init" in context.chat_data:
