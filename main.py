@@ -74,7 +74,9 @@ def echo(update, context):
 
     chat_id = update.message.chat.id
 
-    print(context.chat_data)
+    # print(context.bot.get_chat_member(chat_id, update.message.from_user.id))
+    # print(context.chat_data)
+    # print(update)
     epoch_time = int(time.time())
 
     if messageString == "!start":
@@ -119,6 +121,28 @@ def echo(update, context):
                     chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}/{})\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["xp"], LEVELS[idx2 + 1])
                     break
         context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
+
+    elif messageString.startswith("!setxp"):
+        message = messageString.split(" ")
+        if len(message) != 2:
+            context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+        elif not representsInt(message[1]):
+            context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+        else:
+            xp_set = int(message[1])
+            if update.message.reply_to_message == None:
+                context.bot.send_message(chat_id=chat_id, text="Please reply to a user comment to change their XP!")
+            else:
+                requester_user_id = update.message.from_user.id
+                requester_details = context.bot.get_chat_member(chat_id, requester_user_id)
+                if requester_details.status == "creator":
+                    changing_user_id = update.message.reply_to_message.from_user.id
+                    chat_data = context.chat_data
+                    chat_data["users"][changing_user_id]["xp"] = xp_set
+                    context.bot.send_message(chat_id=chat_id, text="XP changed successfully.")
+                else:
+                    context.bot.send_message(chat_id=chat_id, text="Unauthorized user.")
+        
 
     elif messageString == "!debug" and context.chat_data:
         context.bot.send_message(chat_id=chat_id, text=json.dumps(context.chat_data["users"]))
@@ -171,6 +195,13 @@ def findLevel(xp):
     for idx, itm in enumerate(LEVELS):
         if xp <= itm:
             return (idx, itm)
+
+def representsInt(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False
 
 @functools.lru_cache(maxsize=500)
 def genLevel(x):
