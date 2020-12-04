@@ -70,7 +70,11 @@ def help(update, context):
 
 def echo(update, context):
     """Echo the user message."""
-    messageString = update.message.text.lower()
+    messageString = update.message.text
+    if messageString != None:
+        messageString = messageString.lower()
+    else:
+        return
 
     chat_id = update.message.chat.id
 
