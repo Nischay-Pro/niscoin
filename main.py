@@ -122,6 +122,17 @@ def echo(update, context):
                     break
         context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
 
+    elif messageString == "!toprep":
+        chat_text = "The current Reputation table: \n"
+        users = context.chat_data['users']
+        usersSort = sorted(users.items(),key=lambda x: x[1]['rep'], reverse=True)
+        users = {}
+        for itm in usersSort:
+            users[itm[0]] = itm[1]
+        for idx, user in enumerate(users):
+            chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({})\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["rep"])
+        context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
+
     elif messageString.startswith("!setxp"):
         message = messageString.split(" ")
         if len(message) != 2:
