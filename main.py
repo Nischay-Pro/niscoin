@@ -9,6 +9,7 @@ from telegram.ext import messagequeue as mq
 from telegram.utils.request import Request
 
 import time
+import functools
 
 from random import randrange
 
@@ -19,7 +20,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 # dqueue1 = DelayQueue(burst_limit=20, time_limit_ms=60000)
 
-LEVELS = [0, 100, 235, 505, 810, 1250, 1725, 2335, 2980, 3760, 4575, 5525, 6510, 7630, 8785, 10075, 11400, 12860, 14355, 15985, 17650, 19450, 21285, 23255, 25260, 27400, 29575, 31885, 34230, 36710, 39225, 41875, 44560, 47380, 50235, 53225, 56250, 59410, 62605, 65935]
+LEVELS = []
 
 class MQBot(telegram.bot.Bot):
     '''A subclass of Bot which delegates send method handling to MQ'''
@@ -171,12 +172,28 @@ def findLevel(xp):
         if xp <= itm:
             return (idx, itm)
 
+@functools.lru_cache(maxsize=500)
+def genLevel(x):
+    if x == 0:
+        return x
+    elif x == 1:
+        return 100
+
+    if x % 2 == 0:
+        xp = 2 * genLevel(x - 1) - genLevel(x - 2) + 35
+    else:
+        xp = 2 * genLevel(x - 1) - genLevel(x - 2) + 135
+
+    return xp
+
 def main():
     """Start the bot."""
     config = json.loads(open("config.json").read())
     q = mq.MessageQueue(all_burst_limit=3, all_time_limit_ms=3000)
     request = Request(con_pool_size=8)
     if not config["bot_token"] == "<your token here>":
+        for i in range(501):
+            LEVELS.append(genLevel(i))
         data_persistence = PicklePersistence(filename="db")
         bot = MQBot(config["bot_token"], request=request, mqueue=q)
         updater = Updater(bot=bot, persistence=data_persistence, use_context=True)
