@@ -155,6 +155,29 @@ def echo(update, context):
                         context.bot.send_message(chat_id=chat_id, text="XP changed successfully.")
                 else:
                     context.bot.send_message(chat_id=chat_id, text="Unauthorized user.")
+
+    elif messageString.startswith("!setrep"):
+        message = messageString.split(" ")
+        if len(message) != 2:
+            context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+        elif not representsInt(message[1]):
+            context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+        else:
+            rep_set = int(message[1])
+            if update.message.reply_to_message == None:
+                context.bot.send_message(chat_id=chat_id, text="Please reply to a user's comment to change their Reputation!")
+            else:
+                requester_user_id = update.message.from_user.id
+                requester_details = context.bot.get_chat_member(chat_id, requester_user_id)
+                if requester_details.status == "creator":
+                    changing_user_id = update.message.reply_to_message.from_user.id
+                    changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+                    if not changing_user_data["user"]["is_bot"]:
+                        chat_data = context.chat_data
+                        chat_data["users"][changing_user_id]["rep"] = rep_set
+                        context.bot.send_message(chat_id=chat_id, text="Reputation changed successfully.")
+                else:
+                    context.bot.send_message(chat_id=chat_id, text="Unauthorized user.")
     
     elif messageString == "+":
         if update.message.reply_to_message != None:
