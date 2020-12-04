@@ -1,7 +1,7 @@
 # Python Telegram XP Bot
-[![Issues](https://img.shields.io/github/issues/python-telegram-xp)](https://github.com/python-telegram-xp/issues)
-[![Forks](https://img.shields.io/github/forks/python-telegram-xp)](https://github.com/python-telegram-xp/network)
-[![Stars](https://img.shields.io/github/stars/python-telegram-xp)](https://github.com/python-telegram-xp/stargazers)
+[![Issues](https://img.shields.io/github/issues/python-telegram-xp)](https://github.com/Nischay-Pro/python-telegram-xp/issues)
+[![Forks](https://img.shields.io/github/forks/python-telegram-xp)](https://github.com/Nischay-Pro/python-telegram-xp/network)
+[![Stars](https://img.shields.io/github/stars/python-telegram-xp)](https://github.com/Nischay-Pro/python-telegram-xp/stargazers)
 
 ## What can it do?
 Currently, Python Telegram XP Bot can:
