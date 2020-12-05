@@ -220,16 +220,32 @@ def echo(update, context):
         context.bot.send_message(chat_id=chat_id, text="Hello. I'm an XP and Reputation Bot developed by Nischay-Pro. Inspired by Combot.")
 
     elif messageString == "!getxp":
-        requester_user_id = update.message.from_user.id
-        requester = context.chat_data['users'][requester_user_id]
-        bot_message = "<b>{} {}</b> you have {} xp.".format(requester['user_first'], requester['user_last'], requester['xp'])
-        context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+        if update.message.reply_to_message == None:
+            requester_user_id = update.message.from_user.id
+            requester = context.chat_data['users'][requester_user_id]
+            bot_message = "<b>{} {}</b> you have {} xp.".format(requester['user_first'], requester['user_last'], requester['xp'])
+            context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+        else:
+            changing_user_id = update.message.reply_to_message.from_user.id
+            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+            if not changing_user_data['user']['is_bot']:
+                changer = context.chat_data['users'][changing_user_id]
+                bot_message = "<b>{} {}</b> has {} xp.".format(changer['user_first'], changer['user_last'], changer['xp'])
+                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
 
     elif messageString == "!getrep":
-        requester_user_id = update.message.from_user.id
-        requester = context.chat_data['users'][requester_user_id]
-        bot_message = "<b>{} {}</b> you have {} reputation.".format(requester['user_first'], requester['user_last'], requester['rep'])
-        context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+        if update.message.reply_to_message == None:
+            requester_user_id = update.message.from_user.id
+            requester = context.chat_data['users'][requester_user_id]
+            bot_message = "<b>{} {}</b> you have {} reputation.".format(requester['user_first'], requester['user_last'], requester['rep'])
+            context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+        else:
+            changing_user_id = update.message.reply_to_message.from_user.id
+            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+            if not changing_user_data['user']['is_bot']:
+                changer = context.chat_data['users'][changing_user_id]
+                bot_message = "<b>{} {}</b> has {} reputation.".format(changer['user_first'], changer['user_last'], changer['rep'])
+                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
 
     else:
         if context.chat_data and "init" in context.chat_data:
