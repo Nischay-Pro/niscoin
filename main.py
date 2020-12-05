@@ -95,8 +95,8 @@ def echo(update, context):
             user_last = update.message.from_user.last_name
             if user_last == None:
                 user_last = ""
-            users = {user_id: {"user_id": user_id, "user_first": user_first, "user_last": user_last, "xp": 0, "rep": 0, "last_message": 0, "delta_award_time": 0}}
-            chat_data = {"init" : True, "users": users}
+            users = {user_id: {"user_id": user_id, "user_first": user_first, "user_last": user_last, "xp": 0, "rep": 0, "last_message": 0, "delta_award_time": 0, "coins": 0}}
+            chat_data = {"init" : True, "users": users, "duels": {}}
             context.chat_data.update(chat_data)
 
     elif messageString == "!reset":
@@ -105,8 +105,8 @@ def echo(update, context):
         user_last = update.message.from_user.last_name
         if user_last == None:
             user_last = ""
-        users = {user_id: {"user_id": user_id, "user_first": user_first, "user_last": user_last, "xp": 0, "rep": 0, "last_message": 0, "delta_award_time": 0}}
-        chat_data = {"init" : True, "users": users}
+        users = {user_id: {"user_id": user_id, "user_first": user_first, "user_last": user_last, "xp": 0, "rep": 0, "last_message": 0, "delta_award_time": 0, "coins": 0}}
+        chat_data = {"init" : True, "users": users, "duels": {}}
         context.chat_data.update(chat_data)
         context.bot.send_message(chat_id=chat_id, text="Data expunged!")
 
@@ -212,6 +212,81 @@ def echo(update, context):
                 context.chat_data.update(chat_data)
                 bot_message = "<b>{} {}</b> ({}) has decreased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
                 context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+
+    elif messageString.startswith("!exchange"):
+        message = messageString.split(" ")
+        if message[0] == "!exchange" and len(message) == 1:
+            context.bot.send_message(chat_id=chat_id, text="Exchange your XP for coins. Rate 10 XP = 1 coins.")
+        elif len(message) == 2 and representsInt(message[1]):
+            coins_purchase = int(message[1])
+            if coins_purchase > 0:
+                requester_user_id = update.message.from_user.id
+                requester = context.chat_data['users'][requester_user_id]
+                requester_xp = requester['xp']
+                if requester_xp >= coins_purchase * 10:
+                    chat_data = context.chat_data
+                    chat_data['users'][requester_user_id]['xp'] -= coins_purchase * 10
+                    try:
+                        chat_data['users'][requester_user_id]['coins'] += coins_purchase
+                    except KeyError:
+                        chat_data['users'][requester_user_id].update({"coins": coins_purchase})
+                    context.chat_data.update(chat_data)
+                    context.bot.send_message(chat_id=chat_id, text="Transaction Complete.")
+                else:
+                    context.bot.send_message(chat_id=chat_id, text="Insufficient funds.")
+            else:
+                context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+        else:
+            context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+
+    elif messageString == "!coins":
+        requester_user_id = update.message.from_user.id
+        requester = context.chat_data['users'][requester_user_id]
+        try:
+            coins_avail = requester['coins']
+        except KeyError:
+            coins_avail = 0
+        bot_message = "<b>{} {}</b> you have {} coins.".format(requester['user_first'], requester['user_last'], coins_avail)
+        context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+
+    elif messageString.startswith("!give"):
+        message = messageString.split(" ")
+        if len(message) != 2:
+            context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+        elif not representsInt(message[1]):
+            context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+        else:
+            coin_give = int(message[1])
+            if coin_give > 0:
+                if update.message.reply_to_message == None:
+                    context.bot.send_message(chat_id=chat_id, text="Please reply to a user's comment to give them coins!")
+                else:
+                    requester_user_id = update.message.from_user.id
+                    requester_details = context.bot.get_chat_member(chat_id, requester_user_id)
+                    changing_user_id = update.message.reply_to_message.from_user.id
+                    changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+                    if not changing_user_data["user"]["is_bot"] and requester_user_id != changing_user_id:
+                        try:
+                            requester_coins = context.chat_data["users"][requester_user_id]["coins"]
+                        except KeyError:
+                            requester_coins = 0
+                        try:
+                            changer_coins = context.chat_data["users"][changing_user_id]["coins"] 
+                        except KeyError:
+                            changer_coins = 0
+                        if requester_coins >= coin_give:
+                            chat_data = context.chat_data
+                            chat_data["users"][requester_user_id]["coins"] -= coin_give
+                            try:
+                                chat_data["users"][changing_user_id]["coins"] += coin_give
+                            except KeyError:
+                                chat_data["users"][changing_user_id].update({"coins": coin_give})
+                            context.chat_data.update(chat_data)
+                            context.bot.send_message(chat_id=chat_id, text="Successfully given coins.")
+                        else:
+                            context.bot.send_message(chat_id=chat_id, text="Not enough coins.")
+            else:
+                context.bot.send_message(chat_id=chat_id, text="You have to give atleast 1 coin.")
         
     elif messageString == "!debug" and context.chat_data:
         context.bot.send_message(chat_id=chat_id, text=json.dumps(context.chat_data["users"]))
@@ -257,7 +332,7 @@ def echo(update, context):
                     if user_last == None:
                         user_last = ""
                     users = context.chat_data["users"]
-                    users.update({user_id: {"user_id": user_id, "user_first": user_first, "user_last": user_last, "xp": 0, "rep": 0, "last_message": epoch_time, "delta_award_time" : 0}})
+                    users.update({user_id: {"user_id": user_id, "user_first": user_first, "user_last": user_last, "xp": 0, "rep": 0, "last_message": epoch_time, "delta_award_time" : 0, "coins": 0}})
                     context.chat_data["users"].update(users)
                 else:
                     last_message_time = context.chat_data["users"][user_id]["last_message"]

@@ -7,8 +7,9 @@
 Currently, Python Telegram XP Bot can:
 
 * Award XP and levels to users automatically!
-* Telegram Support
-* Manage reputation of users in the group
+* Manage XP and reputation of users in the group.
+* XP based Level Up system.
+* Telegram Support.
 
 ## Requirements
 
@@ -29,4 +30,4 @@ TODO
 
 ## Help
 
-Please raise an Issue [here](https://github.com/python-telegram-xp/issues/new) if you have any problems.
+Please raise an issue [here](https://github.com/python-telegram-xp/issues/new) if you have any problems.
