@@ -219,6 +219,18 @@ def echo(update, context):
     elif messageString == "!about":
         context.bot.send_message(chat_id=chat_id, text="Hello. I'm an XP and Reputation Bot developed by Nischay-Pro. Inspired by Combot.")
 
+    elif messageString == "!getxp":
+        requester_user_id = update.message.from_user.id
+        requester = context.chat_data['users'][requester_user_id]
+        bot_message = "<b>{} {}</b> you have {} xp.".format(requester['user_first'], requester['user_last'], requester['xp'])
+        context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+
+    elif messageString == "!getrep":
+        requester_user_id = update.message.from_user.id
+        requester = context.chat_data['users'][requester_user_id]
+        bot_message = "<b>{} {}</b> you have {} reputation.".format(requester['user_first'], requester['user_last'], requester['rep'])
+        context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+
     else:
         if context.chat_data and "init" in context.chat_data:
             if context.chat_data.get("init"):
