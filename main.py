@@ -292,7 +292,7 @@ def echo(update, context):
         context.bot.send_message(chat_id=chat_id, text=json.dumps(context.chat_data["users"]))
 
     elif messageString == "!about":
-        context.bot.send_message(chat_id=chat_id, text="Hello. I'm an XP and Reputation Bot developed by Nischay-Pro. Inspired by Combot.")
+        context.bot.send_message(chat_id=chat_id, text="Hello. I'm a bot developed by Nischay-Pro. You can find my code <a href='https://github.com/Nischay-Pro/python-telegram-xp'>here</a>. Inspired by Combot.", parse_mode="HTML")
 
     elif messageString == "!getxp":
         if update.message.reply_to_message == None:
