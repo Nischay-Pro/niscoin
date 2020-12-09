@@ -103,12 +103,16 @@ def echo(update, context):
         user_id = update.message.from_user.id
         user_first = update.message.from_user.first_name
         user_last = update.message.from_user.last_name
-        if user_last == None:
-            user_last = ""
-        users = {user_id: {"user_id": user_id, "user_first": user_first, "user_last": user_last, "xp": 0, "rep": 0, "last_message": 0, "delta_award_time": 0, "coins": 0}}
-        chat_data = {"init" : True, "users": users, "duels": {}}
-        context.chat_data.update(chat_data)
-        context.bot.send_message(chat_id=chat_id, text="Data expunged!")
+        requester_details = context.bot.get_chat_member(chat_id, user_id)
+        if requester_details.status == "creator":
+            if user_last == None:
+                user_last = ""
+            users = {user_id: {"user_id": user_id, "user_first": user_first, "user_last": user_last, "xp": 0, "rep": 0, "last_message": 0, "delta_award_time": 0, "coins": 0}}
+            chat_data = {"init" : True, "users": users, "duels": {}}
+            context.chat_data.update(chat_data)
+            context.bot.send_message(chat_id=chat_id, text="Data expunged!")
+        else:
+            context.bot.send_message(chat_id=chat_id, text="Unauthorized user.")
 
     elif (messageString == "!topxp" or messageString == "!toplvl") and context.chat_data:
         chat_text = "The current XP table: \n"
