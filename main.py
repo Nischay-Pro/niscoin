@@ -282,6 +282,9 @@ def echo(update, context):
                 if int(message[2]) == 0:
                     slow = True
                 translate_text = str(message[3])
+                if len(translate_text) > 1000:
+                    context.bot.send_message(chat_id=chat_id, text="Translate Text limit reached maximum (1000).")
+                    return
                 requester_user_id = update.message.from_user.id
                 requester = context.chat_data['users'][requester_user_id]
                 lang = message[1]
