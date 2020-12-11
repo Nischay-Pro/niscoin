@@ -131,3 +131,5 @@ dmypy.json
 
 config.json
 db
+
+*.mp3
