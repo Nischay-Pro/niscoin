@@ -12,6 +12,10 @@ import time
 import functools
 
 from random import randrange
+import gtts
+from multiprocessing import Pool
+
+import subprocess
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -76,13 +80,12 @@ def echo(update, context):
     except AttributeError:
         return
 
+    translate_options = gtts.lang.tts_langs().keys()
+
     messageString = messageString.lower()
 
     chat_id = update.message.chat.id
 
-    # print(context.bot.get_chat_member(chat_id, update.message.from_user.id))
-    # print(context.chat_data)
-    # print(update)
     epoch_time = int(time.time())
 
     if messageString == "!start":
@@ -253,6 +256,73 @@ def echo(update, context):
         bot_message = "<b>{} {}</b> you have {} coins.".format(requester['user_first'], requester['user_last'], coins_avail)
         context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
 
+    elif messageString.startswith("!play"):
+        if '"' in messageString:
+            temp = messageString.split('"')
+            command = temp[0].split(" ")
+            tts_string = temp[1]
+            command.pop(-1)
+            message = command
+            message.append(tts_string)
+        else:
+            message = messageString.split(" ")
+        if len(message) == 1 and messageString == "!play":
+            context.bot.send_message(chat_id=chat_id, text="TTS any string at 5 coins per translation! \n Format !play <language code> <fast mode> <tts string>")
+        elif len(message) == 2 and messageString == "!play lang":
+            language_support = gtts.lang.tts_langs()
+            message = "The current languages supported are: \nCode | Language \n"
+            for itm in language_support.keys():
+                message += "{} : {}\n".format(itm, language_support[itm])
+            context.bot.send_message(chat_id=chat_id, text=message)
+        elif len(message) != 4:
+            context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+        else:
+            if representsInt(message[2]) and message[1] in translate_options:
+                slow = False
+                if int(message[2]) == 0:
+                    slow = True
+                translate_text = str(message[3])
+                requester_user_id = update.message.from_user.id
+                requester = context.chat_data['users'][requester_user_id]
+                lang = message[1]
+                try:
+                    requester_coins = context.chat_data["users"][requester_user_id]["coins"]
+                except KeyError:
+                    requester_coins = 0
+                if requester_coins < 5:
+                    context.bot.send_message(chat_id=chat_id, text="Insufficient funds!")
+                else:
+                    command_string = 'gtts-cli "{}" --lang {} --output hello.mp3'.format(translate_text, lang)
+                    if slow:
+                        command_string = 'gtts-cli "{}" --lang {} --output hello.mp3 --slow'.format(translate_text, lang)
+                    try:
+                        output = subprocess.check_output(command_string, stderr=subprocess.STDOUT, timeout=5, shell=True)
+                        chat_data = context.chat_data
+                        chat_data['users'][requester_user_id]['coins'] -= 5
+                        context.chat_data.update(chat_data)
+                        context.bot.send_voice(chat_id=chat_id, voice=open("hello.mp3", "rb"))
+                    except subprocess.TimeoutExpired:
+                        context.bot.send_message(chat_id=chat_id, text="Server Timed out!")
+                    except:
+                        context.bot.send_message(chat_id=chat_id, text="Critical Error!")
+
+                    # pool = Pool()
+                    # kw={"text": translate_text, "lang": lang, "slow": slow}
+                    # pool_result = pool.map_async(translateWorker, [(translate_text, lang, slow)])
+                    # pool_result.wait(timeout=5)
+                    # if pool_result.ready():
+                    #     results = pool_result.get(timeout=1)
+                    #     print(results)
+                    #     chat_data = context.chat_data
+                    #     chat_data['users'][requester_user_id]['coins'] -= 5
+                    #     context.chat_data.update(chat_data)
+                    #     context.bot.send_voice(chat_id=chat_id, voice=open("hello.mp3", "rb"))
+                    # else:
+                    #     context.bot.send_message(chat_id=chat_id, text="Server Timed out!")
+            else:
+                context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+
+
     elif messageString.startswith("!give"):
         message = messageString.split(" ")
         if len(message) != 2:
@@ -369,6 +439,15 @@ def echo(update, context):
                             context.chat_data.update(chat_data)
                             if old_level != new_level and old_level[0] != 0:
                                 context.bot.send_message(chat_id=chat_id, text="🌟 {} has reached level {}!".format(update.message.from_user.first_name, old_level[0]))
+
+def translateWorker(*args):
+    text = args[0][0]
+    lang = args[0][1]
+    slow = args[0][2]
+    tts = gtts.gTTS(text, lang=lang, slow=slow)
+    with open('hello.mp3', 'wb') as f:
+        tts.write_to_fp(f)
+    return True
 
 def error(update, context):
     """Log Errors caused by Updates."""
