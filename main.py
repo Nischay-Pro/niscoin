@@ -191,6 +191,33 @@ def echo(update, context):
                         context.bot.send_message(chat_id=chat_id, text="Reputation changed successfully.")
                 else:
                     context.bot.send_message(chat_id=chat_id, text="Unauthorized user.")
+
+    elif messageString.startswith("!setcoins"):
+        message = messageString.split(" ")
+        if len(message) != 2:
+            context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+        elif not representsInt(message[1]):
+            context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
+        else:
+            coins_set = int(message[1])
+            if update.message.reply_to_message == None:
+                context.bot.send_message(chat_id=chat_id, text="Please reply to a user's comment to change their coins!")
+            else:
+                requester_user_id = update.message.from_user.id
+                requester_details = context.bot.get_chat_member(chat_id, requester_user_id)
+                if requester_details.status == "creator":
+                    changing_user_id = update.message.reply_to_message.from_user.id
+                    changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+                    if not changing_user_data["user"]["is_bot"]:
+                        chat_data = context.chat_data
+                    try:
+                        chat_data['users'][changing_user_id]['coins'] = coins_set
+                    except KeyError:
+                        chat_data['users'][changing_user_id].update({"coins": coins_set})
+                    context.chat_data.update(chat_data)
+                    context.bot.send_message(chat_id=chat_id, text="Coins changed successfully.")
+                else:
+                    context.bot.send_message(chat_id=chat_id, text="Unauthorized user.")
     
     elif messageString == "+":
         if update.message.reply_to_message != None:
@@ -299,7 +326,7 @@ def echo(update, context):
                     if slow:
                         command_string = 'gtts-cli "{}" --lang {} --output hello.mp3 --slow'.format(translate_text, lang)
                     try:
-                        output = subprocess.check_output(command_string, stderr=subprocess.STDOUT, timeout=5, shell=True)
+                        output = subprocess.check_output(command_string, stderr=subprocess.STDOUT, timeout=10, shell=True)
                         chat_data = context.chat_data
                         chat_data['users'][requester_user_id]['coins'] -= 5
                         context.chat_data.update(chat_data)
