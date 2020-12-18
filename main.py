@@ -273,7 +273,7 @@ def echo(update, context):
         else:
             context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
 
-    elif messageString == "!coins":
+    elif messageString == "!getcoins":
         requester_user_id = update.message.from_user.id
         requester = context.chat_data['users'][requester_user_id]
         try:
@@ -398,7 +398,7 @@ def echo(update, context):
     elif messageString == "!about":
         context.bot.send_message(chat_id=chat_id, text="Hello. I'm a bot developed by Nischay-Pro. You can find my code <a href='https://github.com/Nischay-Pro/python-telegram-xp'>here</a>. Inspired by Combot.", parse_mode="HTML")
 
-    elif messageString == "!getxp":
+    elif messageString == "!getxp" or messageString == "!getlvl":
         if update.message.reply_to_message == None:
             requester_user_id = update.message.from_user.id
             requester = context.chat_data['users'][requester_user_id]
