@@ -4,5 +4,9 @@
         "enabled": false,
         "odds": 100,
         "multiplier": 10
+    },
+    "reputation":{
+        "positive": ["+"],
+        "negative": ["-"]
     }
 }

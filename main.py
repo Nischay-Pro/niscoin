@@ -219,7 +219,7 @@ def echo(update, context):
                 else:
                     context.bot.send_message(chat_id=chat_id, text="Unauthorized user.")
     
-    elif messageString == "+":
+    elif messageString in STATIC_CONFIGURATION[0]["reputation"]["positive"]:
         if update.message.reply_to_message != None:
             requester_user_id = update.message.from_user.id
             changing_user_id = update.message.reply_to_message.from_user.id
@@ -233,7 +233,7 @@ def echo(update, context):
                 bot_message = "<b>{} {}</b> ({}) has increased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
                 context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
 
-    elif messageString == "-":
+    elif messageString in STATIC_CONFIGURATION[0]["reputation"]["negative"]:
         if update.message.reply_to_message != None:
             requester_user_id = update.message.from_user.id
             changing_user_id = update.message.reply_to_message.from_user.id
