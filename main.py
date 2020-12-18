@@ -210,12 +210,12 @@ def echo(update, context):
                     changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
                     if not changing_user_data["user"]["is_bot"]:
                         chat_data = context.chat_data
-                    try:
-                        chat_data['users'][changing_user_id]['coins'] = coins_set
-                    except KeyError:
-                        chat_data['users'][changing_user_id].update({"coins": coins_set})
-                    context.chat_data.update(chat_data)
-                    context.bot.send_message(chat_id=chat_id, text="Coins changed successfully.")
+                        try:
+                            chat_data['users'][changing_user_id]['coins'] = coins_set
+                        except KeyError:
+                            chat_data['users'][changing_user_id].update({"coins": coins_set})
+                        context.chat_data.update(chat_data)
+                        context.bot.send_message(chat_id=chat_id, text="Coins changed successfully.")
                 else:
                     context.bot.send_message(chat_id=chat_id, text="Unauthorized user.")
     
@@ -281,7 +281,7 @@ def echo(update, context):
         except KeyError:
             coins_avail = 0
         bot_message = "<b>{} {}</b> you have {} coins.".format(requester['user_first'], requester['user_last'], coins_avail)
-        context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+        context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
 
     elif messageString.startswith("!play"):
         if '"' in messageString:
@@ -403,28 +403,28 @@ def echo(update, context):
             requester_user_id = update.message.from_user.id
             requester = context.chat_data['users'][requester_user_id]
             bot_message = "<b>{} {}</b> you have {} xp.".format(requester['user_first'], requester['user_last'], requester['xp'])
-            context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+            context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
         else:
             changing_user_id = update.message.reply_to_message.from_user.id
             changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
             if not changing_user_data['user']['is_bot']:
                 changer = context.chat_data['users'][changing_user_id]
                 bot_message = "<b>{} {}</b> has {} xp.".format(changer['user_first'], changer['user_last'], changer['xp'])
-                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
 
     elif messageString == "!getrep":
         if update.message.reply_to_message == None:
             requester_user_id = update.message.from_user.id
             requester = context.chat_data['users'][requester_user_id]
             bot_message = "<b>{} {}</b> you have {} reputation.".format(requester['user_first'], requester['user_last'], requester['rep'])
-            context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+            context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
         else:
             changing_user_id = update.message.reply_to_message.from_user.id
             changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
             if not changing_user_data['user']['is_bot']:
                 changer = context.chat_data['users'][changing_user_id]
                 bot_message = "<b>{} {}</b> has {} reputation.".format(changer['user_first'], changer['user_last'], changer['rep'])
-                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML", quote=True)
+                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
 
     else:
         if context.chat_data and "init" in context.chat_data:
