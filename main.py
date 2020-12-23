@@ -69,8 +69,12 @@ def start(update, context):
 
 
 def help(update, context):
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+    chat_id = update.message.chat.id
+    chat_text = "Commands available are: \n"
+    helpStrings = STATIC_CONFIGURATION[1]["commands"]
+    for itm in helpStrings.keys():
+        chat_text += '<b>!{}</b> → {}\n'.format(itm, helpStrings[itm])
+    context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
 
 
 def echo(update, context):
@@ -443,6 +447,13 @@ def echo(update, context):
                 bot_message = "<b>{} {}</b> has {} reputation.".format(changer['user_first'], changer['user_last'], changer['rep'])
                 context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
 
+    elif messageString == "!help":
+        chat_text = "Commands available are: \n"
+        helpStrings = STATIC_CONFIGURATION[1]["commands"]
+        for itm in helpStrings.keys():
+            chat_text += '<b>!{}</b> → {}\n'.format(itm, helpStrings[itm])
+        context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
+
     else:
         if context.chat_data and "init" in context.chat_data:
             if context.chat_data.get("init"):
@@ -529,10 +540,12 @@ def genLevel(x):
 def main():
     """Start the bot."""
     config = json.loads(open("config.json").read())
+    helpconfig = json.loads(open("help.json").read())
     q = mq.MessageQueue(all_burst_limit=3, all_time_limit_ms=3000)
     request = Request(con_pool_size=8)
     if not config["bot_token"] == "<your token here>":
         STATIC_CONFIGURATION.append(config)
+        STATIC_CONFIGURATION.append(helpconfig)
         for i in range(501):
             LEVELS.append(genLevel(i))
         data_persistence = PicklePersistence(filename="db")

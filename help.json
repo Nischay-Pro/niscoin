@@ -1,0 +1,24 @@
+{
+    "commands":
+    {
+        "start": "Start the bot.",
+        "reset": "Reset the bot to default settings (Wipes bot data!).",
+        "topxp": "Display a table containing users with the most XP and level they current are.",
+        "toplvl": "Alias to topxp.",
+        "topcoins": "Display a table containing users with the highest number of coins.",
+        "toprep": "Display a table containing users with the highest reputation.",
+        "setxp": "Sets the XP of a user (Restricted).",
+        "setrep": "Sets the reputation of a user (Restricted).",
+        "setcoins": "Sets the coins of a user (Restricted).",
+        "exchange": "Exchange XP for coins (Self).",
+        "getcoins": "Gets the number of coins (Self).",
+        "play": "Spend coins to TTS a custom provided message.",
+        "give": "Give coins to a user.",
+        "debug": "Access bot debug info (Restricted).",
+        "about": "Display the about information for this bot.",
+        "getxp": "Get the current XP and level of a user (Self).",
+        "getlvl": "Alias to getxp.",
+        "getrep": "Get the current reputation of a user (Self).",
+        "init": "Initialize the bot to default settings. Run this before using start."
+    }
+}
