@@ -393,7 +393,10 @@ def echo(update, context):
                 context.bot.send_message(chat_id=chat_id, text="You have to give atleast 1 coin.")
         
     elif messageString == "!debug" and context.chat_data:
-        context.bot.send_message(chat_id=chat_id, text=json.dumps(context.chat_data["users"]))
+        requester_user_id = update.message.from_user.id
+        requester_details = context.bot.get_chat_member(chat_id, requester_user_id)
+        if requester_details.status == "creator":
+            context.bot.send_message(chat_id=chat_id, text=json.dumps(context.chat_data["users"]))
 
     elif messageString == "!about":
         context.bot.send_message(chat_id=chat_id, text="Hello. I'm a bot developed by Nischay-Pro. You can find my code <a href='https://github.com/Nischay-Pro/python-telegram-xp'>here</a>. Inspired by Combot.", parse_mode="HTML")
