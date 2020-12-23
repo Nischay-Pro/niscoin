@@ -135,6 +135,20 @@ def echo(update, context):
                     break
         context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
 
+    elif messageString == "!topcoins" and context.chat_data:
+        chat_text = "The current Coins table: \n"
+        users = context.chat_data['users']
+        usersSort = sorted(users.items(),key=lambda x: x[1]['coins'], reverse=True)
+        users = {}
+        for itm in usersSort:
+            users[itm[0]] = itm[1]
+        for idx, user in enumerate(users):
+            try:
+                chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({})\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["coins"])
+            except KeyError:
+                pass
+        context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
+
     elif messageString == "!toprep":
         chat_text = "The current Reputation table: \n"
         users = context.chat_data['users']
@@ -280,7 +294,7 @@ def echo(update, context):
             coins_avail = requester['coins']
         except KeyError:
             coins_avail = 0
-        bot_message = "<b>{} {}</b> you have {} coins.".format(requester['user_first'], requester['user_last'], coins_avail)
+        bot_message = "<b>{} {}</b> you have {} coin(s).".format(requester['user_first'], requester['user_last'], coins_avail)
         context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
 
     elif messageString.startswith("!play"):
