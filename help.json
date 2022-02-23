@@ -19,6 +19,8 @@
         "getxp": "Get the current XP and level of a user (Self).",
         "getlvl": "Alias to getxp.",
         "getrep": "Get the current reputation of a user (Self).",
-        "init": "Initialize the bot to default settings. Run this before using start."
+        "getfilters": "Get the list of reputation filter words",
+        "init": "Initialize the bot to default settings. Run this before using start.",
+        "statistics": "Displays the general statistics of Niscoin."
     }
 }

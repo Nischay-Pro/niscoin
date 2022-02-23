@@ -16,6 +16,7 @@ import gtts
 from multiprocessing import Pool
 
 import subprocess
+import pickle
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -128,14 +129,14 @@ def echo(update, context):
         users = {}
         for itm in usersSort:
             users[itm[0]] = itm[1]
-        for idx, user in enumerate(users):
+        for idx, user in enumerate(tuple(users.keys())[0:10]):
             user_xp = users[user]["xp"]
             for idx2, lvl in enumerate(LEVELS):
                 if user_xp < lvl:
-                    chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}/{})\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["xp"], lvl)
+                    chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}/{}) - Level {}\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["xp"], lvl, idx2)
                     break
                 elif user_xp == lvl:
-                    chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}/{})\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["xp"], LEVELS[idx2 + 1])
+                    chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}/{}) - Level {}\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["xp"], LEVELS[idx2 + 1], idx2)
                     break
         context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
 
@@ -146,7 +147,7 @@ def echo(update, context):
         users = {}
         for itm in usersSort:
             users[itm[0]] = itm[1]
-        for idx, user in enumerate(users):
+        for idx, user in enumerate(tuple(users.keys())[0:10]):
             try:
                 chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({})\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["coins"])
             except KeyError:
@@ -160,7 +161,7 @@ def echo(update, context):
         users = {}
         for itm in usersSort:
             users[itm[0]] = itm[1]
-        for idx, user in enumerate(users):
+        for idx, user in enumerate(tuple(users.keys())[0:10]):
             chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({})\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["rep"])
         context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
 
@@ -236,6 +237,21 @@ def echo(update, context):
                         context.bot.send_message(chat_id=chat_id, text="Coins changed successfully.")
                 else:
                     context.bot.send_message(chat_id=chat_id, text="Unauthorized user.")
+
+    elif messageString in STATIC_CONFIGURATION[0]["reputation"]["minipositive"]:
+        if update.message.reply_to_message != None:
+            requester_user_id = update.message.from_user.id
+            changing_user_id = update.message.reply_to_message.from_user.id
+            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
+                requester = context.chat_data['users'][requester_user_id]
+                changer = context.chat_data['users'][changing_user_id]
+                chat_data = context.chat_data
+                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
+                    chat_data['users'][changing_user_id]['rep'] += 0.5
+                context.chat_data.update(chat_data)
+                bot_message = "<b>{} {}</b> ({}) has increased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
+                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
     
     elif messageString in STATIC_CONFIGURATION[0]["reputation"]["positive"]:
         if update.message.reply_to_message != None:
@@ -246,9 +262,41 @@ def echo(update, context):
                 requester = context.chat_data['users'][requester_user_id]
                 changer = context.chat_data['users'][changing_user_id]
                 chat_data = context.chat_data
-                chat_data['users'][changing_user_id]['rep'] += 1
+                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
+                    chat_data['users'][changing_user_id]['rep'] += 1
                 context.chat_data.update(chat_data)
                 bot_message = "<b>{} {}</b> ({}) has increased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
+                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+
+    elif messageString in STATIC_CONFIGURATION[0]["reputation"]["megapositive"]:
+        if update.message.reply_to_message != None:
+            requester_user_id = update.message.from_user.id
+            changing_user_id = update.message.reply_to_message.from_user.id
+            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
+                requester = context.chat_data['users'][requester_user_id]
+                changer = context.chat_data['users'][changing_user_id]
+                chat_data = context.chat_data
+                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
+                    chat_data['users'][changing_user_id]['rep'] += 2
+                    chat_data['users'][requester_user_id]['rep'] -= 1
+                context.chat_data.update(chat_data)
+                bot_message = "<b>{} {}</b> ({}) has increased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
+                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+
+    elif messageString in STATIC_CONFIGURATION[0]["reputation"]["mininegative"]:
+        if update.message.reply_to_message != None:
+            requester_user_id = update.message.from_user.id
+            changing_user_id = update.message.reply_to_message.from_user.id
+            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
+                requester = context.chat_data['users'][requester_user_id]
+                changer = context.chat_data['users'][changing_user_id]
+                chat_data = context.chat_data
+                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
+                    chat_data['users'][changing_user_id]['rep'] -= 0.5
+                context.chat_data.update(chat_data)
+                bot_message = "<b>{} {}</b> ({}) has decreased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
                 context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
 
     elif messageString in STATIC_CONFIGURATION[0]["reputation"]["negative"]:
@@ -260,10 +308,28 @@ def echo(update, context):
                 requester = context.chat_data['users'][requester_user_id]
                 changer = context.chat_data['users'][changing_user_id]
                 chat_data = context.chat_data
-                chat_data['users'][changing_user_id]['rep'] -= 1
+                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
+                    chat_data['users'][changing_user_id]['rep'] -= 1
                 context.chat_data.update(chat_data)
                 bot_message = "<b>{} {}</b> ({}) has decreased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
                 context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+
+    elif messageString in STATIC_CONFIGURATION[0]["reputation"]["meganegative"]:
+        if update.message.reply_to_message != None:
+            requester_user_id = update.message.from_user.id
+            changing_user_id = update.message.reply_to_message.from_user.id
+            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
+                requester = context.chat_data['users'][requester_user_id]
+                changer = context.chat_data['users'][changing_user_id]
+                chat_data = context.chat_data
+                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
+                    chat_data['users'][changing_user_id]['rep'] -= 2
+                    chat_data['users'][requester_user_id]['rep'] -= 1
+                context.chat_data.update(chat_data)
+                bot_message = "<b>{} {}</b> ({}) has decreased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
+                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+                
 
     elif messageString.startswith("!exchange"):
         message = messageString.split(" ")
@@ -312,7 +378,7 @@ def echo(update, context):
         else:
             message = messageString.split(" ")
         if len(message) == 1 and messageString == "!play":
-            context.bot.send_message(chat_id=chat_id, text="TTS any string at 5 coins per translation! \n Format !play <language code> <fast mode> <tts string>")
+            context.bot.send_message(chat_id=chat_id, text="TTS any string at 50 coins per translation! \n Format !play <language code> <fast mode> <tts string>")
         elif len(message) == 2 and messageString == "!play lang":
             language_support = gtts.lang.tts_langs()
             message = "The current languages supported are: \nCode | Language \n"
@@ -337,7 +403,7 @@ def echo(update, context):
                     requester_coins = context.chat_data["users"][requester_user_id]["coins"]
                 except KeyError:
                     requester_coins = 0
-                if requester_coins < 5:
+                if requester_coins < 50:
                     context.bot.send_message(chat_id=chat_id, text="Insufficient funds!")
                 else:
                     command_string = 'gtts-cli "{}" --lang {} --output hello.mp3'.format(translate_text, lang)
@@ -346,27 +412,13 @@ def echo(update, context):
                     try:
                         output = subprocess.check_output(command_string, stderr=subprocess.STDOUT, timeout=10, shell=True)
                         chat_data = context.chat_data
-                        chat_data['users'][requester_user_id]['coins'] -= 5
+                        chat_data['users'][requester_user_id]['coins'] -= 50
                         context.chat_data.update(chat_data)
                         context.bot.send_voice(chat_id=chat_id, voice=open("hello.mp3", "rb"))
                     except subprocess.TimeoutExpired:
                         context.bot.send_message(chat_id=chat_id, text="Server Timed out!")
                     except:
                         context.bot.send_message(chat_id=chat_id, text="Critical Error!")
-
-                    # pool = Pool()
-                    # kw={"text": translate_text, "lang": lang, "slow": slow}
-                    # pool_result = pool.map_async(translateWorker, [(translate_text, lang, slow)])
-                    # pool_result.wait(timeout=5)
-                    # if pool_result.ready():
-                    #     results = pool_result.get(timeout=1)
-                    #     print(results)
-                    #     chat_data = context.chat_data
-                    #     chat_data['users'][requester_user_id]['coins'] -= 5
-                    #     context.chat_data.update(chat_data)
-                    #     context.bot.send_voice(chat_id=chat_id, voice=open("hello.mp3", "rb"))
-                    # else:
-                    #     context.bot.send_message(chat_id=chat_id, text="Server Timed out!")
             else:
                 context.bot.send_message(chat_id=chat_id, text="Invalid Command!")
 
@@ -416,6 +468,18 @@ def echo(update, context):
         if requester_details.status == "creator":
             context.bot.send_message(chat_id=chat_id, text=json.dumps(context.chat_data["users"]))
 
+    elif messageString == "!getfilters":
+        chat_text = "Filters available are: \n"
+        chat_text += "Reputation Increment → \n"
+        helpStrings = STATIC_CONFIGURATION[0]["reputation"]["positive"]
+        for itm in helpStrings:
+            chat_text += '<b>{}</b>\n'.format(itm)
+        chat_text += "Reputation Decrement → \n"
+        helpStrings = STATIC_CONFIGURATION[0]["reputation"]["negative"]
+        for itm in helpStrings:
+            chat_text += '<b>{}</b>\n'.format(itm)
+        context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
+
     elif messageString == "!about":
         context.bot.send_message(chat_id=chat_id, text="Hello. I'm a bot developed by Nischay-Pro. You can find my code <a href='https://github.com/Nischay-Pro/python-telegram-xp'>here</a>. Inspired by Combot.", parse_mode="HTML")
 
@@ -452,6 +516,14 @@ def echo(update, context):
         helpStrings = STATIC_CONFIGURATION[1]["commands"]
         for itm in helpStrings.keys():
             chat_text += '<b>!{}</b> → {}\n'.format(itm, helpStrings[itm])
+        context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
+
+    elif messageString == "!statistics":
+        with open("db", "rb") as file:
+            data = pickle.load(file)
+        groups_count = len(data["chat_data"])
+        users_count = len(data["user_data"])
+        chat_text = "Currently Niscoin is serving {} groups with {} unique users.".format(groups_count, users_count)
         context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
 
     else:

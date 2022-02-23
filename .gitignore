@@ -133,3 +133,6 @@ config.json
 db
 
 *.mp3
+
+convert.py
+data.json
