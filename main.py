@@ -93,6 +93,8 @@ def echo(update, context):
 
     epoch_time = int(time.time())
 
+    reputation_awards = ("🥇", "🥈", "🥉")
+
     if messageString == "!start":
         if context.chat_data:
             context.bot.send_message(chat_id=chat_id, text="You already ran the command. If you want to reset the settings run !reset")
@@ -130,13 +132,20 @@ def echo(update, context):
         for itm in usersSort:
             users[itm[0]] = itm[1]
         for idx, user in enumerate(tuple(users.keys())[0:10]):
+            award = ""
+            if idx == 0:
+                award = "🥇"
+            elif idx == 1:
+                award = "🥈"
+            elif idx == 2:
+                award = "🥉"
             user_xp = users[user]["xp"]
             for idx2, lvl in enumerate(LEVELS):
                 if user_xp < lvl:
-                    chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}/{}) - Level {}\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["xp"], lvl, idx2)
+                    chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}/{}) - Level {} {}\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["xp"], lvl, idx2, award)
                     break
                 elif user_xp == lvl:
-                    chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}/{}) - Level {}\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["xp"], LEVELS[idx2 + 1], idx2)
+                    chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}/{}) - Level {} {}\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["xp"], LEVELS[idx2 + 1], idx2, award)
                     break
         context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
 
@@ -162,7 +171,14 @@ def echo(update, context):
         for itm in usersSort:
             users[itm[0]] = itm[1]
         for idx, user in enumerate(tuple(users.keys())[0:10]):
-            chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({})\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["rep"])
+            award = ""
+            if idx == 0:
+                award = "🥇"
+            elif idx == 1:
+                award = "🥈"
+            elif idx == 2:
+                award = "🥉"
+            chat_text += '{} <a href="tg://user?id={}">{} {}</a> ({}){}\n'.format(idx + 1, users[user]["user_id"], users[user]["user_first"], users[user]["user_last"], users[user]["rep"], award)
         context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
 
     elif messageString.startswith("!setxp"):
@@ -240,96 +256,27 @@ def echo(update, context):
 
     elif messageString in STATIC_CONFIGURATION[0]["reputation"]["minipositive"]:
         if update.message.reply_to_message != None:
-            requester_user_id = update.message.from_user.id
-            changing_user_id = update.message.reply_to_message.from_user.id
-            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
-            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
-                requester = context.chat_data['users'][requester_user_id]
-                changer = context.chat_data['users'][changing_user_id]
-                chat_data = context.chat_data
-                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
-                    chat_data['users'][changing_user_id]['rep'] += 0.5
-                context.chat_data.update(chat_data)
-                bot_message = "<b>{} {}</b> ({}) has increased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
-                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+            changeReputation(update, context, chat_id, True, 0.5, STATIC_CONFIGURATION, reputation_awards)
     
     elif messageString in STATIC_CONFIGURATION[0]["reputation"]["positive"]:
         if update.message.reply_to_message != None:
-            requester_user_id = update.message.from_user.id
-            changing_user_id = update.message.reply_to_message.from_user.id
-            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
-            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
-                requester = context.chat_data['users'][requester_user_id]
-                changer = context.chat_data['users'][changing_user_id]
-                chat_data = context.chat_data
-                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
-                    chat_data['users'][changing_user_id]['rep'] += 1
-                context.chat_data.update(chat_data)
-                bot_message = "<b>{} {}</b> ({}) has increased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
-                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+            changeReputation(update, context, chat_id, True, 1, STATIC_CONFIGURATION, reputation_awards)
 
     elif messageString in STATIC_CONFIGURATION[0]["reputation"]["megapositive"]:
         if update.message.reply_to_message != None:
-            requester_user_id = update.message.from_user.id
-            changing_user_id = update.message.reply_to_message.from_user.id
-            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
-            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
-                requester = context.chat_data['users'][requester_user_id]
-                changer = context.chat_data['users'][changing_user_id]
-                chat_data = context.chat_data
-                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
-                    chat_data['users'][changing_user_id]['rep'] += 2
-                    chat_data['users'][requester_user_id]['rep'] -= 1
-                context.chat_data.update(chat_data)
-                bot_message = "<b>{} {}</b> ({}) has increased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
-                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+            changeReputation(update, context, chat_id, True, 2, STATIC_CONFIGURATION, reputation_awards)
 
     elif messageString in STATIC_CONFIGURATION[0]["reputation"]["mininegative"]:
         if update.message.reply_to_message != None:
-            requester_user_id = update.message.from_user.id
-            changing_user_id = update.message.reply_to_message.from_user.id
-            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
-            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
-                requester = context.chat_data['users'][requester_user_id]
-                changer = context.chat_data['users'][changing_user_id]
-                chat_data = context.chat_data
-                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
-                    chat_data['users'][changing_user_id]['rep'] -= 0.5
-                context.chat_data.update(chat_data)
-                bot_message = "<b>{} {}</b> ({}) has decreased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
-                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+            changeReputation(update, context, chat_id, False, 0.5, STATIC_CONFIGURATION, reputation_awards)
 
     elif messageString in STATIC_CONFIGURATION[0]["reputation"]["negative"]:
         if update.message.reply_to_message != None:
-            requester_user_id = update.message.from_user.id
-            changing_user_id = update.message.reply_to_message.from_user.id
-            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
-            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
-                requester = context.chat_data['users'][requester_user_id]
-                changer = context.chat_data['users'][changing_user_id]
-                chat_data = context.chat_data
-                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
-                    chat_data['users'][changing_user_id]['rep'] -= 1
-                context.chat_data.update(chat_data)
-                bot_message = "<b>{} {}</b> ({}) has decreased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
-                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
+            changeReputation(update, context, chat_id, False, 1, STATIC_CONFIGURATION, reputation_awards)
 
     elif messageString in STATIC_CONFIGURATION[0]["reputation"]["meganegative"]:
         if update.message.reply_to_message != None:
-            requester_user_id = update.message.from_user.id
-            changing_user_id = update.message.reply_to_message.from_user.id
-            changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
-            if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
-                requester = context.chat_data['users'][requester_user_id]
-                changer = context.chat_data['users'][changing_user_id]
-                chat_data = context.chat_data
-                if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
-                    chat_data['users'][changing_user_id]['rep'] -= 2
-                    chat_data['users'][requester_user_id]['rep'] -= 1
-                context.chat_data.update(chat_data)
-                bot_message = "<b>{} {}</b> ({}) has decreased reputation of <b>{} {}</b> ({})".format(requester['user_first'], requester['user_last'], requester['rep'], changer['user_first'], changer['user_last'], changer['rep'])
-                context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
-                
+            changeReputation(update, context, chat_id, False, 2, STATIC_CONFIGURATION, reputation_awards)
 
     elif messageString.startswith("!exchange"):
         message = messageString.split(" ")
@@ -594,6 +541,43 @@ def representsInt(s):
         return True
     except ValueError:
         return False
+
+def getAward(user, users_list, award_list):
+    try:
+        user_idx = users_list.index(user)
+        return award_list[user_idx]
+    except ValueError:
+        return ""
+
+def changeReputation(update, context, chat_id, positive, modifier, STATIC_CONFIGURATION, reputation_awards):
+    requester_user_id = update.message.from_user.id
+    changing_user_id = update.message.reply_to_message.from_user.id
+    changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
+    if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
+        users = context.chat_data['users']
+        usersSort = sorted(users.items(),key=lambda x: x[1]['rep'], reverse=True)
+        usersSort = [user[0] for user in usersSort]
+        requester = context.chat_data['users'][requester_user_id]
+        changer = context.chat_data['users'][changing_user_id]
+        chat_data = context.chat_data
+        requester_award = getAward(requester_user_id, usersSort, reputation_awards)
+        changer_award = getAward(changing_user_id, usersSort, reputation_awards)
+        if requester_user_id not in STATIC_CONFIGURATION[0]["reputation"]["ignorelist"]:
+            if positive:
+                chat_data['users'][changing_user_id]['rep'] += modifier
+                if modifier == 2:
+                    chat_data['users'][requester_user_id]['rep'] -= 1
+            else:
+                chat_data['users'][changing_user_id]['rep'] -= modifier
+                if modifier == 2:
+                    chat_data['users'][requester_user_id]['rep'] -= 1
+        context.chat_data.update(chat_data)
+        if positive:
+            type_message = "increased"
+        else:
+            type_message = "decreased"
+        bot_message = "<b>{} {}</b> ({}) {} has {} reputation of <b>{} {}</b> ({}) {}".format(requester['user_first'], requester['user_last'], requester['rep'], requester_award, type_message, changer['user_first'], changer['user_last'], changer['rep'], changer_award)
+        context.bot.send_message(chat_id=chat_id, text=bot_message, parse_mode="HTML")
 
 @functools.lru_cache(maxsize=500)
 def genLevel(x):
