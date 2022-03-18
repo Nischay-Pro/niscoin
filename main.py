@@ -555,7 +555,7 @@ def changeReputation(update, context, chat_id, positive, modifier, STATIC_CONFIG
     changing_user_data = context.bot.get_chat_member(chat_id, changing_user_id)
     if requester_user_id != changing_user_id and not changing_user_data['user']['is_bot']:
         users = context.chat_data['users']
-        usersSort = sorted(users.items(),key=lambda x: x[1]['rep'], reverse=True)
+        usersSort = sorted(users.items(),key=lambda x: x[1]['rep'], reverse=True)[0:3]
         usersSort = [user[0] for user in usersSort]
         requester = context.chat_data['users'][requester_user_id]
         changer = context.chat_data['users'][changing_user_id]
@@ -600,7 +600,7 @@ def main():
     q = mq.MessageQueue(all_burst_limit=3, all_time_limit_ms=3000)
     request = Request(con_pool_size=8)
     if not config["bot_token"] == "<your token here>":
-        STATIC_CONFIGURATION.append(config)
+        STATIC_CONFIGURATION.append(config) 
         STATIC_CONFIGURATION.append(helpconfig)
         for i in range(501):
             LEVELS.append(genLevel(i))
