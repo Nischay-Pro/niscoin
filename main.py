@@ -10,6 +10,8 @@ from telegram.utils.request import Request
 
 import time
 import functools
+import os
+import signal
 
 from random import randrange
 import gtts
@@ -27,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 LEVELS = []
 STATIC_CONFIGURATION = []
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "database", "data.db")
 
 class MQBot(telegram.bot.Bot):
     '''A subclass of Bot which delegates send method handling to MQ'''
@@ -466,7 +469,7 @@ def echo(update, context):
         context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
 
     elif messageString == "!statistics":
-        with open("db", "rb") as file:
+        with open(DB_PATH, "rb") as file:
             data = pickle.load(file)
         groups_count = len(data["chat_data"])
         users_count = len(data["user_data"])
@@ -604,7 +607,7 @@ def main():
         STATIC_CONFIGURATION.append(helpconfig)
         for i in range(501):
             LEVELS.append(genLevel(i))
-        data_persistence = PicklePersistence(filename="db")
+        data_persistence = PicklePersistence(filename=DB_PATH)
         bot = MQBot(config["bot_token"], request=request, mqueue=q)
         updater = Updater(bot=bot, persistence=data_persistence, use_context=True)
     else:
@@ -634,6 +637,7 @@ def main():
     # SIGTERM or SIGABRT. This should be used most of the time, since
     # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
+    os.kill(os.getpid(), signal.SIGINT)
 
 
 if __name__ == '__main__':
