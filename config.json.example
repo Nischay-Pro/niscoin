@@ -1,12 +1,17 @@
 {
-    "bot_token": "<your token here>"
+    "bot_token": "<your token here>",
     "lottery":{
-        "enabled": false,
-        "odds": 100,
+        "enabled": true,
+        "odds": 200,
         "multiplier": 10
     },
     "reputation":{
-        "positive": ["+"],
-        "negative": ["-"]
+        "minipositive": [".+", "miniplus", "mini+", "dotplus", "dp"],
+        "positive": ["+", "+1", "plus"],
+        "megapositive": ["++", "+2", "megaplus", "mega+"],
+        "mininegative": [".-", "miniminus", "mini-", "dotminus", "dm"],
+        "negative": ["-", "-1", "minus"],
+        "meganegative": ["--", "-2", "megaminus", "mega-"],
+        "ignorelist": []
     }
 }
