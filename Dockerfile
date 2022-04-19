@@ -6,7 +6,7 @@ LABEL maintainer="Nischay Mamidi <NischayPro@protonmail.com>"
 
 COPY entrypoint.sh /entrypoint.sh
 
-RUN apk add --no-cache python3 git py-pip
+RUN apk add --no-cache python3 py-pip
 
 COPY . /app
 
