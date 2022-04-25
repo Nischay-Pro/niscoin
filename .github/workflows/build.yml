@@ -23,10 +23,8 @@ jobs:
             ghcr.io/Nischay-Pro/niscoin
           # generate Docker tags based on the following events/attributes
           tags: |
-            type=ref,event=tag
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
