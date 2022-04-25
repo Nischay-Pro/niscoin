@@ -431,7 +431,7 @@ def echo(update, context):
         context.bot.send_message(chat_id=chat_id, text=chat_text, parse_mode="HTML")
 
     elif messageString == "!about":
-        context.bot.send_message(chat_id=chat_id, text="Hello. I'm a bot developed by Nischay-Pro. You can find my code <a href='https://github.com/Nischay-Pro/python-telegram-xp'>here</a>. Inspired by Combot.", parse_mode="HTML")
+        context.bot.send_message(chat_id=chat_id, text="Hello. I'm a bot developed by Nischay-Pro. You can find my code <a href='https://github.com/Nischay-Pro/niscoin'>here</a>. Inspired by Combot.", parse_mode="HTML")
 
     elif messageString == "!getxp" or messageString == "!getlvl":
         if update.message.reply_to_message == None:
