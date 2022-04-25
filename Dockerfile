@@ -6,13 +6,12 @@ LABEL maintainer="Nischay Mamidi <NischayPro@protonmail.com>"
 
 COPY entrypoint.sh /entrypoint.sh
 
-RUN apk add --no-cache python3 py-pip
-
 COPY . /app
 
 WORKDIR /app
 
-RUN pip3 install gtts python-telegram-bot
+RUN apk add --no-cache python3 py-pip &&\
+    pip3 install gtts python-telegram-bot
 
 VOLUME [ "/app/database" , "/app/config.json" ]
 

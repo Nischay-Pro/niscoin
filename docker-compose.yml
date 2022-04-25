@@ -1,0 +1,12 @@
+# Simple docker-compose file for self hosting
+
+version: "3.8"
+
+services:
+  niscoin:
+    image: nischaypro/niscoin:latest
+    container_name: niscoin
+    volumes:
+      - ./database:/app/database
+      - ./config.json:/app/config.json
+    restart: unless-stopped
