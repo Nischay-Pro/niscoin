@@ -2,8 +2,6 @@ name: docker-build
 
 on:
   push:
-    branches:
-      - 'main'
     tags:
       - 'v*.*.*'
 
@@ -29,7 +27,6 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=sha
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
