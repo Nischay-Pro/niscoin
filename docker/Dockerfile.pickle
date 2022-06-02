@@ -1,4 +1,4 @@
-ARG BASE=alpine:3.15
+ARG BASE=alpine:3.16
 
 FROM ${BASE}
 
@@ -11,7 +11,8 @@ COPY . /app
 WORKDIR /app
 
 RUN apk add --no-cache python3 py-pip &&\
-    pip3 install gtts python-telegram-bot
+    pip3 install --upgrade gtts &&\
+    pip3 install --upgrade python-telegram-bot --pre
 
 VOLUME [ "/app/database" , "/app/config.json" ]
 

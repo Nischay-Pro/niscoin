@@ -5,3 +5,6 @@ LICENSE
 .vscode
 config.json.example
 docker-compose.yml
+logs
+database
+test

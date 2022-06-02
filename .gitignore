@@ -138,3 +138,4 @@ db
 
 convert.py
 data.json
+database/*
