@@ -7,6 +7,9 @@ on:
 
 jobs:
   docker:
+    strategy:
+      matrix:
+        backend: [pickle, postgres]
     runs-on: ubuntu-latest
     steps:
       -
@@ -19,12 +22,12 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            nischaypro/niscoin
-            ghcr.io/Nischay-Pro/niscoin
+            nischaypro/niscoin-{{ matrix.backend }}
+            ghcr.io/Nischay-Pro/niscoin-{{ matrix.backend }}
           # generate Docker tags based on the following events/attributes
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=semver,suffix={{ matrix.backend }},pattern={{version}}
+            type=semver,suffix={{ matrix.backend }},pattern={{major}}.{{minor}}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -45,11 +48,12 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
-        name: Build and push
+        name: Build pickle
         uses: docker/build-push-action@v2
         with:
           context: .
           platforms: linux/amd64,linux/arm64
+          file: docker/Dockerfile.{{ matrix.backend }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

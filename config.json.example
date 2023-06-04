@@ -13,5 +13,14 @@
         "negative": ["-", "-1", "minus"],
         "meganegative": ["--", "-2", "megaminus", "mega-"],
         "ignorelist": []
+    },
+    "persistence":{
+        "backend": "postgres",
+        "postgres_host": "localhost",
+        "postgres_port": 5432,
+        "postgres_username": "niscoin",
+        "postgres_password": "niscoin",
+        "postgres_database": "telegres",
+        "postgres_schema": "niscoin"
     }
 }

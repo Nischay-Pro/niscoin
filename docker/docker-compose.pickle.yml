@@ -4,7 +4,7 @@ version: "3.8"
 
 services:
   niscoin:
-    image: nischaypro/niscoin:latest
+    image: nischaypro/niscoin-pickle:latest
     container_name: niscoin
     volumes:
       - ./database:/app/database

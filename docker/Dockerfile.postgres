@@ -10,9 +10,10 @@ COPY . /app
 
 WORKDIR /app
 
-RUN apk add --no-cache python3 py-pip &&\
+RUN apk add --no-cache python3 py-pip git &&\
     pip3 install --upgrade gtts psycopg[binary] &&\
-    pip3 install --upgrade python-telegram-bot --pre
+    pip3 install --upgrade python-telegram-bot &&\
+    pip3 install git+https://github.com/Nischay-Pro/telegres
 
 VOLUME [ "/app/config.json" ]
 

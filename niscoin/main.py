@@ -12,7 +12,10 @@ from configuration import Configuration, PersistenceType
 import conversation
 from misc import configure_levels
 
-import psycopg
+try:
+    import psycopg
+except ImportError:
+    pass
 import sys
 from logging.handlers import TimedRotatingFileHandler
 
@@ -25,7 +28,10 @@ from telegram.ext import (
     filters,
 )
 
-from telegres import PostgresPersistence
+try:
+    from telegres import PostgresPersistence
+except ImportError:
+    pass
 
 cwd = os.getcwd()
 log_path = os.path.join(cwd, "logs")

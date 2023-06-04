@@ -1,0 +1,28 @@
+# Simple docker-compose file for self hosting
+
+version: "3.8"
+
+services:
+  niscoin:
+    image: nischaypro/niscoin-postgres:latest
+    container_name: niscoin
+    volumes:
+      - ./config.json:/app/config.json
+    restart: unless-stopped
+    networks:
+      - niscoin_network
+  db:
+    image: postgres:16
+    container_name: db
+    environment:
+      POSTGRES_USER: niscoin
+      POSTGRES_PASSWORD: niscoin
+      POSTGRES_DB: telegres
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - niscoin_network
+
+networks:
+  niscoin_network:

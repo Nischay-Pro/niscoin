@@ -2,4 +2,4 @@
 
 set -x
 
-exec python3 main.py
+exec python3 niscoin/main.py --database /app/database
